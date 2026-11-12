@@ -1,0 +1,2033 @@
+<title>Triple Laptop Homelab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+/* Design Plan & Palette Tokens */
+:root {
+  --bg: #0b111a;
+  --bg-surface: #131c28;
+  --bg-card: #1a2536;
+  --bg-card-hover: #223046;
+  --border: #28374d;
+  --border-light: #374a67;
+  --fg: #e6edf5;
+  --fg-muted: #8fa0b8;
+  --fg-dim: #5c6f88;
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.2);
+  --success: #34d399;
+  --success-glow: rgba(52, 211, 153, 0.2);
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --purple: #a855f7;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f6fa;
+    --bg-surface: #ffffff;
+    --bg-card: #e9eef5;
+    --bg-card-hover: #dfe7f2;
+    --border: #cdd8e6;
+    --border-light: #b9cbe0;
+    --fg: #0d1522;
+    --fg-muted: #4e6178;
+    --fg-dim: #7d90a8;
+    --accent: #0284c7;
+    --accent-glow: rgba(2, 132, 199, 0.15);
+    --success: #059669;
+    --success-glow: rgba(5, 150, 105, 0.15);
+    --warning: #d97706;
+    --danger: #dc2626;
+    --purple: #9333ea;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f6fa;
+  --bg-surface: #ffffff;
+  --bg-card: #e9eef5;
+  --bg-card-hover: #dfe7f2;
+  --border: #cdd8e6;
+  --border-light: #b9cbe0;
+  --fg: #0d1522;
+  --fg-muted: #4e6178;
+  --fg-dim: #7d90a8;
+  --accent: #0284c7;
+  --accent-glow: rgba(2, 132, 199, 0.15);
+  --success: #059669;
+  --success-glow: rgba(5, 150, 105, 0.15);
+  --warning: #d97706;
+  --danger: #dc2626;
+  --purple: #9333ea;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b111a;
+  --bg-surface: #131c28;
+  --bg-card: #1a2536;
+  --bg-card-hover: #223046;
+  --border: #28374d;
+  --border-light: #374a67;
+  --fg: #e6edf5;
+  --fg-muted: #8fa0b8;
+  --fg-dim: #5c6f88;
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.2);
+  --success: #34d399;
+  --success-glow: rgba(52, 211, 153, 0.2);
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --purple: #a855f7;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: max(20px, env(safe-area-inset-top, 0px)) max(40px, env(safe-area-inset-bottom, 0px));
+  min-height: 100vh;
+}
+
+/* Container */
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Header */
+.top-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.brand-info h1 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+.brand-info p {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+/* Navigation Tabs */
+.nav-bar {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-surface);
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.nav-btn:hover {
+  color: var(--fg);
+  background: var(--bg-card);
+}
+
+.nav-btn.active {
+  background: var(--accent);
+  color: #04101d;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Tab Panels */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 3D Prototype Viewer Section */
+.viewer-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .viewer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.viewport-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+}
+
+.viewport-toolbar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.viewport-toolbar > * {
+  pointer-events: auto;
+}
+
+.pill-group {
+  display: inline-flex;
+  background: rgba(11, 17, 26, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.pill-btn {
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pill-btn.active {
+  background: var(--accent);
+  color: #04101d;
+}
+
+.pill-btn:hover:not(.active) {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.action-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.icon-btn {
+  background: rgba(11, 17, 26, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.icon-btn.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#canvas-3d {
+  width: 100%;
+  height: 100%;
+  flex-grow: 1;
+  display: block;
+  cursor: grab;
+}
+
+#canvas-3d:active {
+  cursor: grabbing;
+}
+
+.viewport-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+  background: rgba(11, 17, 26, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Sidebar Details */
+.model-details {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.model-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.model-desc {
+  font-size: 0.88rem;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+.spec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spec-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.spec-label {
+  color: var(--fg-muted);
+}
+
+.spec-val {
+  font-weight: 600;
+  color: var(--fg);
+  font-family: var(--font-mono);
+}
+
+.tag-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.tag-easy { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+.tag-med { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+.tag-pro { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+
+.callout-box {
+  background: var(--accent-glow);
+  border-left: 3px solid var(--accent);
+  padding: 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.82rem;
+  color: var(--fg);
+}
+
+.callout-box strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--accent);
+}
+
+/* Architecture Section */
+.arch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.arch-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.arch-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-2px);
+}
+
+.arch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.arch-number {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.arch-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+
+.arch-subtitle {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+}
+
+/* Interactive SVG Diagrams */
+.diagram-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.diagram-svg {
+  width: 100%;
+  height: auto;
+  min-width: 280px;
+  display: block;
+}
+
+.terms-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.term-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+}
+
+.term-name {
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.term-def {
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+/* Quorum Interactive Simulator */
+.sim-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.sim-nodes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.sim-node-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sim-node-btn.online {
+  border-color: var(--success);
+  background: var(--success-glow);
+}
+
+.sim-node-btn.offline {
+  border-color: var(--danger);
+  background: rgba(248, 113, 113, 0.15);
+  opacity: 0.7;
+}
+
+.sim-node-name {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: block;
+}
+
+.sim-node-status {
+  font-size: 0.7rem;
+  margin-top: 2px;
+  display: block;
+}
+
+.sim-status-banner {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+/* Laptop Hardware Hacks Guide */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.guide-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.guide-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.guide-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.guide-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.step-num {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.72rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.code-snippet {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+/* Calculator Section */
+.calc-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.calc-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.laptop-input-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.laptop-input-box h4 {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-field label {
+  font-size: 0.78rem;
+  color: var(--fg-muted);
+}
+
+.input-field input, .input-field select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.input-field input:focus, .input-field select:focus {
+  border-color: var(--accent);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.stat-tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-name {
+  font-size: 0.78rem;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+.comparison-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+table.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+table.comp-table th, table.comp-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+table.comp-table th {
+  background: var(--bg-card);
+  color: var(--fg);
+  font-weight: 700;
+}
+
+table.comp-table td {
+  background: var(--bg-surface);
+  color: var(--fg-muted);
+}
+
+table.comp-table tr:hover td {
+  background: var(--bg-card-hover);
+}
+</style>
+
+<div class="app-shell">
+  <!-- Header -->
+  <header class="top-header">
+    <div class="brand">
+      <div class="brand-badge">💻³</div>
+      <div class="brand-info">
+        <h1>Triple Laptop Homelab</h1>
+        <p>Architectures & 3D Physical Enclosure Prototypes for 3 Repurposed Laptops</p>
+      </div>
+    </div>
+    <!-- Navigation Tabs -->
+    <nav class="nav-bar">
+      <button class="nav-btn active" data-tab="tab-3d">
+        <span>📦</span> 3D Prototypes
+      </button>
+      <button class="nav-btn" data-tab="tab-arch">
+        <span>⚙️</span> Architectures
+      </button>
+      <button class="nav-btn" data-tab="tab-guide">
+        <span>🛠️</span> Laptop Hacks
+      </button>
+      <button class="nav-btn" data-tab="tab-calc">
+        <span>📊</span> Cluster Specs
+      </button>
+    </nav>
+  </header>
+
+  <!-- TAB 1: 3D Prototypes -->
+  <main id="tab-3d" class="tab-content active">
+    <div class="viewer-grid">
+      <!-- 3D Viewport Box -->
+      <div class="viewport-box">
+        <div class="viewport-toolbar">
+          <div class="pill-group">
+            <button class="pill-btn active" id="proto-toaster">1. Vertical Stand</button>
+            <button class="pill-btn" id="proto-rack">2. Mini Server Rack</button>
+            <button class="pill-btn" id="proto-wall">3. Wall Pegboard</button>
+          </div>
+          <div class="action-btns">
+            <button class="icon-btn" id="btn-explode" title="Expand layers">
+              <span>⇲</span> Explode
+            </button>
+            <button class="icon-btn" id="btn-thermal" title="Show thermal zones">
+              <span>🔥</span> Thermals
+            </button>
+            <button class="icon-btn" id="btn-reset">
+              <span>↺</span> Reset
+            </button>
+          </div>
+        </div>
+
+        <canvas id="canvas-3d"></canvas>
+
+        <div class="viewport-hint">
+          Drag to rotate • Scroll to zoom • Interactive 3D Real-World Prototype
+        </div>
+      </div>
+
+      <!-- Prototype Details Sidebar -->
+      <aside class="model-details" id="proto-info">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="tag-badge tag-easy" id="proto-badge">Recommended</span>
+            <span style="font-size:0.75rem; color:var(--fg-dim);" id="proto-dim">22 × 18 × 30 cm</span>
+          </div>
+          <h2 class="model-title" id="proto-title">Vertical "Toaster" Stand</h2>
+        </div>
+
+        <p class="model-desc" id="proto-desc">
+          Laptops stand vertically on their edges in slotted 3D-printed brackets with 2.5 cm gaps. Lids cracked open 15° to allow heat convection through keyboard vents.
+        </p>
+
+        <div class="spec-list" id="proto-specs">
+          <div class="spec-item">
+            <span class="spec-label">Desk Footprint</span>
+            <span class="spec-val">Very Small (~0.04 m²)</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Cooling Method</span>
+            <span class="spec-val">Natural Chimney Convection</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Build Difficulty</span>
+            <span class="spec-val">Easy (3D Print or Wood)</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Cable Access</span>
+            <span class="spec-val">Rear Channel Drop</span>
+          </div>
+        </div>
+
+        <div class="callout-box" id="proto-tip">
+          <strong>Why Vertical Is Best:</strong>
+          Hot air naturally rises. Standing laptops upright keeps exhausts pointing up and prevents heat from being trapped against closed LCD screens.
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- TAB 2: Architectures -->
+  <section id="tab-arch" class="tab-content">
+    <div style="margin-bottom: 20px;">
+      <h2 style="font-size:1.3rem; font-weight:700;">Server Architecture Blueprints</h2>
+      <p style="color:var(--fg-muted); font-size:0.88rem;">3 laptops is the ideal number for homelabs because of Quorum voting and role separation.</p>
+    </div>
+
+    <div class="arch-grid">
+      <!-- Arch 1: Proxmox HA Cluster -->
+      <article class="arch-card">
+        <div class="arch-header">
+          <div>
+            <h3 class="arch-title">Proxmox VE HA Cluster</h3>
+            <p class="arch-subtitle">High-Availability with 3-Node Quorum</p>
+          </div>
+          <span class="arch-number">ARCH 01</span>
+        </div>
+
+        <!-- Quorum Simulator -->
+        <div class="sim-box">
+          <div class="sim-header">
+            <span>Live Quorum Simulator</span>
+            <span style="color:var(--accent); font-family:var(--font-mono);" id="sim-votes">3 / 3 Votes (100%)</span>
+          </div>
+          <div class="sim-nodes">
+            <button class="sim-node-btn online" id="node-btn-1" onclick="toggleNode(0)">
+              <span class="sim-node-name">Node 1</span>
+              <span class="sim-node-status">Online 🟢</span>
+            </button>
+            <button class="sim-node-btn online" id="node-btn-2" onclick="toggleNode(1)">
+              <span class="sim-node-name">Node 2</span>
+              <span class="sim-node-status">Online 🟢</span>
+            </button>
+            <button class="sim-node-btn online" id="node-btn-3" onclick="toggleNode(2)">
+              <span class="sim-node-name">Node 3</span>
+              <span class="sim-node-status">Online 🟢</span>
+            </button>
+          </div>
+          <div class="sim-status-banner" id="sim-banner" style="background:var(--success-glow); color:var(--success);">
+            CLUSTER HEALTHY: Quorum Met (≥ 51%)
+          </div>
+        </div>
+
+        <!-- Technical Terms Defined Simply -->
+        <div class="terms-grid">
+          <div class="term-item">
+            <span class="term-name">Cluster</span>
+            <p class="term-def">Multiple computers joined together to act as one single powerful system.</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">Node</span>
+            <p class="term-def">A single computer inside the cluster (here, one of your laptops).</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">Quorum</span>
+            <p class="term-def">Minimum votes needed to make decisions. 3 nodes need 2 votes (>50%). If 1 laptop dies, the other 2 keep all apps running.</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">High Availability (HA)</span>
+            <p class="term-def">If Laptop A crashes, Laptop B or C automatically restarts its apps within seconds.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem; color:var(--fg-muted);">
+          <strong>Best For:</strong> Self-hosting critical services that must never go down (Home Assistant, password managers, DNS).
+        </div>
+      </article>
+
+      <!-- Arch 2: Tiered Roles -->
+      <article class="arch-card">
+        <div class="arch-header">
+          <div>
+            <h3 class="arch-title">Tiered Role Separation</h3>
+            <p class="arch-subtitle">Gateway + Storage (NAS) + Compute</p>
+          </div>
+          <span class="arch-number">ARCH 02</span>
+        </div>
+
+        <!-- Flow Diagram -->
+        <div class="diagram-container">
+          <svg class="diagram-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Router / Internet -->
+            <rect x="110" y="8" width="100" height="30" rx="6" fill="#131c28" stroke="#38bdf8" stroke-width="1.5" />
+            <text x="160" y="27" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle" font-family="sans-serif">Home Router</text>
+
+            <!-- Line Down -->
+            <path d="M 160 38 L 160 54" stroke="#8fa0b8" stroke-width="2" marker-end="url(#arrow)" />
+
+            <!-- Laptop 1: Gateway -->
+            <rect x="80" y="54" width="160" height="36" rx="6" fill="#1e2838" stroke="#34d399" stroke-width="1.5" />
+            <text x="160" y="70" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle" font-family="sans-serif">Laptop 1: Network Guard</text>
+            <text x="160" y="83" fill="#8fa0b8" font-size="9" text-anchor="middle" font-family="monospace">Pi-hole • VPN • Reverse Proxy</text>
+
+            <!-- Lines split to Laptop 2 and 3 -->
+            <path d="M 160 90 L 160 102 L 75 102 L 75 116" stroke="#8fa0b8" stroke-width="1.5" />
+            <path d="M 160 102 L 245 102 L 245 116" stroke="#8fa0b8" stroke-width="1.5" />
+
+            <!-- Laptop 2: Storage -->
+            <rect x="10" y="116" width="130" height="46" rx="6" fill="#1e2838" stroke="#fbbf24" stroke-width="1.5" />
+            <text x="75" y="133" fill="#fbbf24" font-size="10.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Laptop 2: NAS / Media</text>
+            <text x="75" y="146" fill="#8fa0b8" font-size="8.5" text-anchor="middle" font-family="monospace">TrueNAS • Jellyfin • Files</text>
+
+            <!-- Laptop 3: Compute -->
+            <rect x="180" y="116" width="130" height="46" rx="6" fill="#1e2838" stroke="#a855f7" stroke-width="1.5" />
+            <text x="245" y="133" fill="#a855f7" font-size="10.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Laptop 3: Heavy Compute</text>
+            <text x="245" y="146" fill="#8fa0b8" font-size="8.5" text-anchor="middle" font-family="monospace">Docker • AI Bots • Coding</text>
+          </svg>
+        </div>
+
+        <div class="terms-grid">
+          <div class="term-item">
+            <span class="term-name">Gateway</span>
+            <p class="term-def">The front door. Inspects all web traffic, blocks ads (Pi-hole), and secures connections (WireGuard VPN).</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">NAS (Storage)</span>
+            <p class="term-def">Network Attached Storage. A server dedicated to holding photos, movies, and hard drive backups.</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">Reverse Proxy</span>
+            <p class="term-def">A traffic cop that guides web requests to the exact app on the right laptop without exposing your private network.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem; color:var(--fg-muted);">
+          <strong>Best For:</strong> When your 3 laptops have very different specs (e.g. 1 weak laptop for network, 1 with big SSD for storage, 1 fast CPU for apps).
+        </div>
+      </article>
+
+      <!-- Arch 3: Lightweight Kubernetes -->
+      <article class="arch-card">
+        <div class="arch-header">
+          <div>
+            <h3 class="arch-title">Lightweight k3s Cluster</h3>
+            <p class="arch-subtitle">Modern Containerized Cloud-Native Lab</p>
+          </div>
+          <span class="arch-number">ARCH 03</span>
+        </div>
+
+        <div class="diagram-container">
+          <svg class="diagram-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Master Node -->
+            <rect x="90" y="10" width="140" height="42" rx="6" fill="#1e2838" stroke="#38bdf8" stroke-width="1.5" />
+            <text x="160" y="27" fill="#38bdf8" font-size="10.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Control Plane (Brain)</text>
+            <text x="160" y="42" fill="#8fa0b8" font-size="8.5" text-anchor="middle" font-family="monospace">Laptop 1: API & Scheduler</text>
+
+            <path d="M 120 52 L 80 85" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" />
+            <path d="M 200 52 L 240 85" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" />
+
+            <!-- Worker 1 -->
+            <rect x="15" y="85" width="130" height="75" rx="6" fill="#131c28" stroke="#34d399" stroke-width="1.5" />
+            <text x="80" y="102" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle" font-family="sans-serif">Worker Node 1</text>
+            <rect x="25" y="112" width="110" height="18" rx="4" fill="#1e2838" />
+            <text x="80" y="125" fill="#8fa0b8" font-size="8" text-anchor="middle" font-family="monospace">App Pod A • App Pod B</text>
+            <rect x="25" y="134" width="110" height="18" rx="4" fill="#1e2838" />
+            <text x="80" y="147" fill="#8fa0b8" font-size="8" text-anchor="middle" font-family="monospace">App Pod C (Replica)</text>
+
+            <!-- Worker 2 -->
+            <rect x="175" y="85" width="130" height="75" rx="6" fill="#131c28" stroke="#34d399" stroke-width="1.5" />
+            <text x="240" y="102" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle" font-family="sans-serif">Worker Node 2</text>
+            <rect x="185" y="112" width="110" height="18" rx="4" fill="#1e2838" />
+            <text x="240" y="125" fill="#8fa0b8" font-size="8" text-anchor="middle" font-family="monospace">App Pod D • App Pod E</text>
+            <rect x="185" y="134" width="110" height="18" rx="4" fill="#1e2838" />
+            <text x="240" y="147" fill="#8fa0b8" font-size="8" text-anchor="middle" font-family="monospace">App Pod A (Replica)</text>
+          </svg>
+        </div>
+
+        <div class="terms-grid">
+          <div class="term-item">
+            <span class="term-name">Container</span>
+            <p class="term-def">An isolated lightweight box holding an app and everything it needs to run.</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">k3s</span>
+            <p class="term-def">A lightweight, low-memory version of Kubernetes made for home servers and edge hardware.</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">Control Plane</span>
+            <p class="term-def">The leader server. Decides which laptop will run each app based on available RAM and CPU.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem; color:var(--fg-muted);">
+          <strong>Best For:</strong> Anyone wanting to learn real-world cloud engineering skills (DevOps, Kubernetes).
+        </div>
+      </article>
+
+      <!-- Arch 4: 2 Prod + 1 Sandbox -->
+      <article class="arch-card">
+        <div class="arch-header">
+          <div>
+            <h3 class="arch-title">2-Node Prod + 1 Sandbox</h3>
+            <p class="arch-subtitle">Safe Experimentation & Disaster Recovery</p>
+          </div>
+          <span class="arch-number">ARCH 04</span>
+        </div>
+
+        <div class="diagram-container">
+          <svg class="diagram-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Production Box -->
+            <rect x="10" y="12" width="190" height="150" rx="8" fill="#131c28" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,4" />
+            <text x="105" y="30" fill="#34d399" font-size="10.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">PROD ZONE (Household Live)</text>
+
+            <rect x="25" y="44" width="160" height="44" rx="6" fill="#1e2838" stroke="#28374d" />
+            <text x="105" y="62" fill="#e6edf5" font-size="10" font-weight="bold" text-anchor="middle">Laptop 1: Primary Services</text>
+            <text x="105" y="76" fill="#8fa0b8" font-size="8.5" text-anchor="middle" font-family="monospace">Home Assistant • Files • DNS</text>
+
+            <rect x="25" y="100" width="160" height="44" rx="6" fill="#1e2838" stroke="#28374d" />
+            <text x="105" y="118" fill="#e6edf5" font-size="10" font-weight="bold" text-anchor="middle">Laptop 2: Backup & Mirror</text>
+            <text x="105" y="132" fill="#8fa0b8" font-size="8.5" text-anchor="middle" font-family="monospace">Nightly Sync • Failover Standby</text>
+
+            <!-- Isolated Sandbox Box -->
+            <rect x="220" y="12" width="90" height="150" rx="8" fill="#131c28" stroke="#f87171" stroke-width="1.5" stroke-dasharray="4,4" />
+            <text x="265" y="30" fill="#f87171" font-size="10.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">SANDBOX</text>
+
+            <rect x="228" y="44" width="74" height="100" rx="6" fill="#1e2838" stroke="#f87171" stroke-width="1" />
+            <text x="265" y="68" fill="#f87171" font-size="9" font-weight="bold" text-anchor="middle">Laptop 3</text>
+            <text x="265" y="84" fill="#8fa0b8" font-size="7.5" text-anchor="middle">Breaking Tests</text>
+            <text x="265" y="98" fill="#8fa0b8" font-size="7.5" text-anchor="middle">New Distros</text>
+            <text x="265" y="112" fill="#8fa0b8" font-size="7.5" text-anchor="middle">Crypto / AI</text>
+          </svg>
+        </div>
+
+        <div class="terms-grid">
+          <div class="term-item">
+            <span class="term-name">Production (Prod)</span>
+            <p class="term-def">The live system your family or home depends on every day. Kept stable and untouchable.</p>
+          </div>
+          <div class="term-item">
+            <span class="term-name">Sandbox</span>
+            <p class="term-def">An isolated test machine where you can test scripts, break things, and reinstall without affecting the house.</p>
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem; color:var(--fg-muted);">
+          <strong>Best For:</strong> Tinkering without getting yelled at by family when internet or smart lights go down.
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- TAB 3: Hardware Hacks -->
+  <section id="tab-guide" class="tab-content">
+    <div style="margin-bottom: 20px;">
+      <h2 style="font-size:1.3rem; font-weight:700;">Laptop-to-Server Hardware Hacks</h2>
+      <p style="color:var(--fg-muted); font-size:0.88rem;">Laptops have built-in battery backups and screens, but need special setup to run safely 24/7.</p>
+    </div>
+
+    <div class="guide-grid">
+      <!-- Battery Care -->
+      <article class="guide-card">
+        <div class="guide-icon" style="background:rgba(251,191,36,0.15); color:var(--warning);">🔋</div>
+        <h3>1. Battery Swelling Prevention</h3>
+        <p style="font-size:0.85rem; color:var(--fg-muted);">
+          Keeping laptop batteries at 100% on charge 24/7 causes chemical stress and dangerous battery swelling ("spicy pillows").
+        </p>
+        <ul class="guide-steps">
+          <li class="guide-step">
+            <span class="step-num">A</span>
+            <div>
+              <strong>Set BIOS Charge Threshold:</strong>
+              Check BIOS for "Battery Health Charge" or "Conservation Mode". Cap maximum charge to 60% or 80%.
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">B</span>
+            <div>
+              <strong>Remove Battery (If supported):</strong>
+              If laptop boots directly from AC adapter with battery removed, pull the battery out completely.
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">C</span>
+            <div>
+              <strong>Free Built-in UPS:</strong>
+              <div style="font-size:0.8rem; margin-top:2px;">A healthy capped battery gives you 30-60 minutes of free power protection during blackout outages!</div>
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <!-- Thermal & Lid Hacks -->
+      <article class="guide-card">
+        <div class="guide-icon" style="background:rgba(56,189,248,0.15); color:var(--accent);">❄️</div>
+        <h3>2. Thermal & Lid Management</h3>
+        <p style="font-size:0.85rem; color:var(--fg-muted);">
+          Laptops exhaust heat through keyboard surfaces. Closing the lid traps heat against the LCD screen and triggers sleep mode.
+        </p>
+        <ul class="guide-steps">
+          <li class="guide-step">
+            <span class="step-num">A</span>
+            <div>
+              <strong>Never Close Lid Completely:</strong>
+              Leave lid ajar 15-20° or remove screen ribbon if comfortable.
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">B</span>
+            <div>
+              <strong>Disable Linux Lid Sleep:</strong>
+              Edit <code>/etc/systemd/logind.conf</code>:
+              <div class="code-snippet">HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore</div>
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">C</span>
+            <div>
+              <strong>Turn Off Screen Backlight:</strong>
+              Saves 5-8 Watts per laptop. In terminal:
+              <div class="code-snippet">setterm --blank 1 --powerdown 1</div>
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <!-- Networking & BIOS -->
+      <article class="guide-card">
+        <div class="guide-icon" style="background:rgba(52,211,153,0.15); color:var(--success);">🔌</div>
+        <h3>3. Networking & Auto-Power-On</h3>
+        <p style="font-size:0.85rem; color:var(--fg-muted);">
+          Make the laptops start back up automatically after a prolonged blackout and maintain rock-solid connection.
+        </p>
+        <ul class="guide-steps">
+          <li class="guide-step">
+            <span class="step-num">A</span>
+            <div>
+              <strong>BIOS "AC Back / Auto Power-On":</strong>
+              Set "Restore on AC Power Loss" to <code>Power On</code> so the laptops boot immediately when electricity returns.
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">B</span>
+            <div>
+              <strong>Hardwire with Ethernet:</strong>
+              Never run server clusters over Wi-Fi. If laptop lacks RJ45 port, buy a $12 USB 3.0-to-Gigabit Ethernet dongle.
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">C</span>
+            <div>
+              <strong>Connect to a Cheap 5-Port Switch:</strong>
+              Link all 3 laptops + your router to a $15 unmanaged gigabit switch for lightning-fast internal sync.
+            </div>
+          </li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- TAB 4: Cluster Specs & Calculator -->
+  <section id="tab-calc" class="tab-content">
+    <div style="margin-bottom: 20px;">
+      <h2 style="font-size:1.3rem; font-weight:700;">Hardware Allocator & Power Estimator</h2>
+      <p style="color:var(--fg-muted); font-size:0.88rem;">Adjust your 3 laptops' specs below to see pooled capacity, electricity cost, and battery runtimes.</p>
+    </div>
+
+    <div class="calc-card">
+      <div class="calc-row">
+        <!-- Laptop 1 -->
+        <div class="laptop-input-box">
+          <h4>
+            <span>💻 Laptop 1</span>
+            <span style="font-size:0.75rem; color:var(--accent);">Gateway / Node 1</span>
+          </h4>
+          <div class="input-field">
+            <label>RAM (Memory)</label>
+            <select id="l1-ram" onchange="calculateCluster()">
+              <option value="4">4 GB</option>
+              <option value="8" selected>8 GB</option>
+              <option value="16">16 GB</option>
+              <option value="32">32 GB</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label>Internal SSD Storage</label>
+            <select id="l1-ssd" onchange="calculateCluster()">
+              <option value="128">128 GB</option>
+              <option value="256" selected>256 GB</option>
+              <option value="512">512 GB</option>
+              <option value="1000">1 TB</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label>Idle Power Consumption</label>
+            <input type="number" id="l1-w" value="12" min="5" max="65" onchange="calculateCluster()">
+          </div>
+        </div>
+
+        <!-- Laptop 2 -->
+        <div class="laptop-input-box">
+          <h4>
+            <span>💻 Laptop 2</span>
+            <span style="font-size:0.75rem; color:var(--success);">NAS / Node 2</span>
+          </h4>
+          <div class="input-field">
+            <label>RAM (Memory)</label>
+            <select id="l2-ram" onchange="calculateCluster()">
+              <option value="4">4 GB</option>
+              <option value="8">8 GB</option>
+              <option value="16" selected>16 GB</option>
+              <option value="32">32 GB</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label>Internal SSD Storage</label>
+            <select id="l2-ssd" onchange="calculateCluster()">
+              <option value="256">256 GB</option>
+              <option value="512" selected>512 GB</option>
+              <option value="1000">1 TB</option>
+              <option value="2000">2 TB</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label>Idle Power Consumption</label>
+            <input type="number" id="l2-w" value="14" min="5" max="65" onchange="calculateCluster()">
+          </div>
+        </div>
+
+        <!-- Laptop 3 -->
+        <div class="laptop-input-box">
+          <h4>
+            <span>💻 Laptop 3</span>
+            <span style="font-size:0.75rem; color:var(--purple);">Compute / Node 3</span>
+          </h4>
+          <div class="input-field">
+            <label>RAM (Memory)</label>
+            <select id="l3-ram" onchange="calculateCluster()">
+              <option value="4">4 GB</option>
+              <option value="8" selected>8 GB</option>
+              <option value="16">16 GB</option>
+              <option value="32">32 GB</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label>Internal SSD Storage</label>
+            <select id="l3-ssd" onchange="calculateCluster()">
+              <option value="128">128 GB</option>
+              <option value="256" selected>256 GB</option>
+              <option value="512">512 GB</option>
+              <option value="1000">1 TB</option>
+            </select>
+          </div>
+          <div class="input-field">
+            <label>Idle Power Consumption</label>
+            <input type="number" id="l3-w" value="15" min="5" max="65" onchange="calculateCluster()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Summary Row -->
+      <div class="stats-grid">
+        <div class="stat-tile">
+          <div class="stat-val" id="total-ram">32 GB</div>
+          <div class="stat-name">Total Pooled RAM</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-val" id="total-storage">1.02 TB</div>
+          <div class="stat-name">Total Fast SSD Storage</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-val" id="total-power">41 Watts</div>
+          <div class="stat-name">Combined Idle Power Draw</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-val" id="monthly-cost" style="color:var(--success);">$4.73 / mo</div>
+          <div class="stat-name">Est. Power Bill (@ $0.16/kWh)</div>
+        </div>
+      </div>
+
+      <!-- Architecture Comparison Table -->
+      <div style="margin-top:16px;">
+        <h3 style="font-size:1.05rem; margin-bottom:12px; font-weight:700;">Architecture Comparison Matrix</h3>
+        <div class="comparison-table-wrap">
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Architecture</th>
+                <th>Setup Effort</th>
+                <th>Failover Protection</th>
+                <th>Hardware Symmetry</th>
+                <th>Best Starting Project</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:700; color:var(--fg);">1. Proxmox VE Cluster</td>
+                <td><span class="tag-badge tag-med">Medium</span></td>
+                <td><span style="color:var(--success);">High (Automatic)</span></td>
+                <td>Works best with similar RAM</td>
+                <td>Home Assistant, Vaultwarden</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700; color:var(--fg);">2. Tiered Roles</td>
+                <td><span class="tag-badge tag-easy">Easy</span></td>
+                <td><span style="color:var(--warning);">None (Independent)</span></td>
+                <td>Perfect for mismatched laptops</td>
+                <td>Pi-hole, TrueNAS, Jellyfin</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700; color:var(--fg);">3. k3s Kubernetes</td>
+                <td><span class="tag-badge tag-pro">Advanced</span></td>
+                <td><span style="color:var(--success);">High (Container Self-Heal)</span></td>
+                <td>Flexible</td>
+                <td>Microservices, Docker apps</td>
+              </tr>
+              <tr>
+                <td style="font-weight:700; color:var(--fg);">4. 2 Prod + 1 Sandbox</td>
+                <td><span class="tag-badge tag-easy">Easy</span></td>
+                <td><span style="color:var(--warning);">Partial (Manual backup)</span></td>
+                <td>Any mix</td>
+                <td>Safe testing without house outage</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Interactive Three.js & Application Script -->
+<script>
+// --- Navigation Tab Switcher ---
+const navBtns = document.querySelectorAll('.nav-btn');
+const tabPanels = document.querySelectorAll('.tab-content');
+
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    navBtns.forEach(b => b.classList.remove('active'));
+    tabPanels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const tabId = btn.getAttribute('data-tab');
+    document.getElementById(tabId).classList.add('active');
+    if (tabId === 'tab-3d') {
+      onWindowResize();
+    }
+  });
+});
+
+// --- Quorum Simulator Logic ---
+const nodeStates = [true, true, true]; // all online
+
+function toggleNode(index) {
+  nodeStates[index] = !nodeStates[index];
+  const btn = document.getElementById(`node-btn-${index + 1}`);
+  if (nodeStates[index]) {
+    btn.className = 'sim-node-btn online';
+    btn.querySelector('.sim-node-status').textContent = 'Online 🟢';
+  } else {
+    btn.className = 'sim-node-btn offline';
+    btn.querySelector('.sim-node-status').textContent = 'Offline 🔴';
+  }
+
+  const onlineCount = nodeStates.filter(Boolean).length;
+  const pct = Math.round((onlineCount / 3) * 100);
+  document.getElementById('sim-votes').textContent = `${onlineCount} / 3 Votes (${pct}%)`;
+
+  const banner = document.getElementById('sim-banner');
+  if (onlineCount >= 2) {
+    banner.style.background = 'var(--success-glow)';
+    banner.style.color = 'var(--success)';
+    banner.textContent = onlineCount === 3
+      ? 'CLUSTER HEALTHY: Quorum Met (3/3 votes)'
+      : 'HIGH AVAILABILITY ACTIVE: 1 node failed, 2/3 votes keep quorum alive!';
+  } else {
+    banner.style.background = 'rgba(248, 113, 113, 0.2)';
+    banner.style.color = 'var(--danger)';
+    banner.textContent = 'QUORUM LOST: Less than 51% votes. Cluster freezes writes to prevent data corruption!';
+  }
+}
+
+// --- Cluster Specs Calculator ---
+function calculateCluster() {
+  const l1Ram = parseInt(document.getElementById('l1-ram').value) || 8;
+  const l2Ram = parseInt(document.getElementById('l2-ram').value) || 16;
+  const l3Ram = parseInt(document.getElementById('l3-ram').value) || 8;
+  const totalRam = l1Ram + l2Ram + l3Ram;
+  document.getElementById('total-ram').textContent = `${totalRam} GB`;
+
+  const l1Ssd = parseInt(document.getElementById('l1-ssd').value) || 256;
+  const l2Ssd = parseInt(document.getElementById('l2-ssd').value) || 512;
+  const l3Ssd = parseInt(document.getElementById('l3-ssd').value) || 256;
+  const totalSsdGb = l1Ssd + l2Ssd + l3Ssd;
+  document.getElementById('total-storage').textContent = totalSsdGb >= 1000
+    ? `${(totalSsdGb / 1000).toFixed(2)} TB`
+    : `${totalSsdGb} GB`;
+
+  const l1W = parseFloat(document.getElementById('l1-w').value) || 12;
+  const l2W = parseFloat(document.getElementById('l2-w').value) || 14;
+  const l3W = parseFloat(document.getElementById('l3-w').value) || 15;
+  const totalW = l1W + l2W + l3W;
+  document.getElementById('total-power').textContent = `${totalW.toFixed(0)} Watts`;
+
+  // Energy cost estimate: kWh = (Watts * 24 * 30.5) / 1000. Rate $0.16/kWh
+  const monthlyKwh = (totalW * 24 * 30.5) / 1000;
+  const monthlyDollars = (monthlyKwh * 0.16).toFixed(2);
+  document.getElementById('monthly-cost').textContent = `$${monthlyDollars} / mo`;
+}
+
+// --- 3D Scene Initialization with Three.js ---
+const canvas = document.getElementById('canvas-3d');
+let renderer, scene, camera;
+let modelGroup = new THREE.Group();
+let currentProto = 'toaster';
+let isExploded = false;
+let isThermal = false;
+
+// Interaction controls
+let isDragging = false;
+let prevMousePos = { x: 0, y: 0 };
+let spherical = { radius: 14, theta: Math.PI / 4, phi: Math.PI / 3 };
+
+function initThree() {
+  const container = canvas.parentElement;
+  const width = container.clientWidth;
+  const height = container.clientHeight || 520;
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+  updateCameraPos();
+
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+  scene.add(ambientLight);
+
+  const keyLight = new THREE.DirectionalLight(0xe0f2fe, 0.9);
+  keyLight.position.set(10, 15, 12);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.width = 1024;
+  keyLight.shadow.mapSize.height = 1024;
+  scene.add(keyLight);
+
+  const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.4);
+  fillLight.position.set(-10, 8, -10);
+  scene.add(fillLight);
+
+  const rimLight = new THREE.PointLight(0x38bdf8, 0.8, 20);
+  rimLight.position.set(0, -2, 6);
+  scene.add(rimLight);
+
+  scene.add(modelGroup);
+
+  // Ground plane subtle grid
+  const gridHelper = new THREE.GridHelper(20, 20, 0x28374d, 0x1a2536);
+  gridHelper.position.y = -3.5;
+  scene.add(gridHelper);
+
+  buildPrototype(currentProto);
+
+  // Event Listeners for Orbit / Dragging
+  canvas.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+
+  canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+  window.addEventListener('touchmove', onTouchMove, { passive: false });
+  window.addEventListener('touchend', onPointerUp);
+
+  canvas.addEventListener('wheel', onWheel, { passive: false });
+  window.addEventListener('resize', onWindowResize);
+
+  animate();
+}
+
+function updateCameraPos() {
+  spherical.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, spherical.phi));
+  spherical.radius = Math.max(6, Math.min(26, spherical.radius));
+
+  camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+  camera.position.y = spherical.radius * Math.cos(spherical.phi);
+  camera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+  camera.lookAt(0, 0, 0);
+}
+
+function onPointerDown(e) {
+  isDragging = true;
+  prevMousePos = { x: e.clientX, y: e.clientY };
+}
+
+function onPointerMove(e) {
+  if (!isDragging) return;
+  const deltaX = e.clientX - prevMousePos.x;
+  const deltaY = e.clientY - prevMousePos.y;
+  prevMousePos = { x: e.clientX, y: e.clientY };
+
+  spherical.theta -= deltaX * 0.008;
+  spherical.phi -= deltaY * 0.008;
+  updateCameraPos();
+}
+
+function onTouchStart(e) {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+}
+
+function onTouchMove(e) {
+  if (!isDragging || e.touches.length !== 1) return;
+  e.preventDefault();
+  const deltaX = e.touches[0].clientX - prevMousePos.x;
+  const deltaY = e.touches[0].clientY - prevMousePos.y;
+  prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+  spherical.theta -= deltaX * 0.01;
+  spherical.phi -= deltaY * 0.01;
+  updateCameraPos();
+}
+
+function onPointerUp() {
+  isDragging = false;
+}
+
+function onWheel(e) {
+  e.preventDefault();
+  spherical.radius += e.deltaY * 0.012;
+  updateCameraPos();
+}
+
+function onWindowResize() {
+  const container = canvas.parentElement;
+  if (!container) return;
+  const width = container.clientWidth;
+  const height = container.clientHeight || 520;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+
+// --- Laptop 3D Model Generator ---
+function createLaptopMesh(colorHex, thermalColorHex, lidAngleRad = 0.25) {
+  const laptopGroup = new THREE.Group();
+
+  const chassisMat = new THREE.MeshStandardMaterial({
+    color: isThermal ? thermalColorHex : colorHex,
+    metalness: 0.7,
+    roughness: 0.35
+  });
+
+  const screenMat = new THREE.MeshStandardMaterial({
+    color: 0x111827,
+    metalness: 0.8,
+    roughness: 0.2
+  });
+
+  const portMat = new THREE.MeshStandardMaterial({
+    color: 0x0f172a,
+    metalness: 0.9,
+    roughness: 0.1
+  });
+
+  const ledMat = new THREE.MeshBasicMaterial({
+    color: isThermal ? 0xff4444 : 0x34d399
+  });
+
+  // Base Body (Keyboard half) - 4.4 x 0.25 x 3.0
+  const baseGeo = new THREE.BoxGeometry(4.4, 0.24, 3.0);
+  const baseMesh = new THREE.Mesh(baseGeo, chassisMat);
+  baseMesh.castShadow = true;
+  baseMesh.receiveShadow = true;
+  laptopGroup.add(baseMesh);
+
+  // Keyboard depression
+  const kbGeo = new THREE.BoxGeometry(3.6, 0.03, 1.6);
+  const kbMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8 });
+  const kbMesh = new THREE.Mesh(kbGeo, kbMat);
+  kbMesh.position.set(0, 0.12, -0.3);
+  laptopGroup.add(kbMesh);
+
+  // Trackpad
+  const tpGeo = new THREE.BoxGeometry(1.4, 0.02, 0.9);
+  const tpMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 });
+  const tpMesh = new THREE.Mesh(tpGeo, tpMat);
+  tpMesh.position.set(0, 0.12, 0.85);
+  laptopGroup.add(tpMesh);
+
+  // Status LED
+  const ledGeo = new THREE.SphereGeometry(0.04, 8, 8);
+  const ledMesh = new THREE.Mesh(ledGeo, ledMat);
+  ledMesh.position.set(1.9, 0.13, 1.3);
+  laptopGroup.add(ledMesh);
+
+  // Screen Lid Group (hinged at back)
+  const lidGroup = new THREE.Group();
+  lidGroup.position.set(0, 0.12, -1.45); // hinge pivot
+
+  const lidBackGeo = new THREE.BoxGeometry(4.4, 0.14, 2.95);
+  const lidBackMesh = new THREE.Mesh(lidBackGeo, chassisMat);
+  lidBackMesh.position.set(0, 0.07, 1.45);
+  lidBackMesh.castShadow = true;
+  lidGroup.add(lidBackMesh);
+
+  const displayGeo = new THREE.BoxGeometry(4.1, 0.02, 2.65);
+  const displayMesh = new THREE.Mesh(displayGeo, screenMat);
+  displayMesh.position.set(0, 0.01, 1.45);
+  lidGroup.add(displayMesh);
+
+  lidGroup.rotation.x = -lidAngleRad; // tilt lid open
+  laptopGroup.add(lidGroup);
+
+  return laptopGroup;
+}
+
+// --- Switch & Cable Generator ---
+function createNetworkSwitch() {
+  const swGroup = new THREE.Group();
+  const swGeo = new THREE.BoxGeometry(3.2, 0.6, 1.8);
+  const swMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.5, roughness: 0.4 });
+  const swMesh = new THREE.Mesh(swGeo, swMat);
+  swGroup.add(swMesh);
+
+  // 5 RJ45 port recesses + blinking LEDs
+  for (let i = 0; i < 5; i++) {
+    const portGeo = new THREE.BoxGeometry(0.35, 0.25, 0.1);
+    const portMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+    const portMesh = new THREE.Mesh(portGeo, portMat);
+    portMesh.position.set(-1.0 + i * 0.5, -0.05, 0.91);
+    swGroup.add(portMesh);
+
+    const portLedGeo = new THREE.SphereGeometry(0.035, 6, 6);
+    const portLedMat = new THREE.MeshBasicMaterial({ color: i < 3 ? 0x34d399 : 0x64748b });
+    const portLedMesh = new THREE.Mesh(portLedGeo, portLedMat);
+    portLedMesh.position.set(-1.0 + i * 0.5, 0.18, 0.91);
+    swGroup.add(portLedMesh);
+  }
+  return swGroup;
+}
+
+// --- Build Chosen 3D Prototype ---
+function buildPrototype(type) {
+  // Clear existing objects
+  while (modelGroup.children.length > 0) {
+    modelGroup.remove(modelGroup.children[0]);
+  }
+
+  const explodeOffset = isExploded ? 1.8 : 0;
+
+  if (type === 'toaster') {
+    // PROTOTYPE 1: Vertical "Toaster" Stand
+    // Base Stand: 3D printed slotted tray
+    const standMat = new THREE.MeshStandardMaterial({
+      color: 0x1e2838,
+      roughness: 0.6,
+      metalness: 0.2
+    });
+
+    const basePlatform = new THREE.Mesh(
+      new THREE.BoxGeometry(5.2, 0.5, 4.8),
+      standMat
+    );
+    basePlatform.position.y = -2.2;
+    basePlatform.receiveShadow = true;
+    modelGroup.add(basePlatform);
+
+    // Vertical Divider Fins
+    for (let f = -1.8; f <= 1.8; f += 1.2) {
+      const fin = new THREE.Mesh(
+        new THREE.BoxGeometry(0.2, 1.8, 4.4),
+        standMat
+      );
+      fin.position.set(f, -1.2, 0);
+      fin.castShadow = true;
+      modelGroup.add(fin);
+    }
+
+    // 3 Laptops placed vertically in slots
+    const colors = [0x94a3b8, 0x64748b, 0x475569];
+    const thermals = [0x38bdf8, 0xfbbf24, 0xf87171]; // cool, medium, warm
+
+    for (let i = 0; i < 3; i++) {
+      const lap = createLaptopMesh(colors[i], thermals[i], 0.28);
+      // Orient vertically on side
+      lap.rotation.z = Math.PI / 2;
+      lap.rotation.y = Math.PI;
+
+      const slotX = (-1.2 + i * 1.2) + (i === 0 ? -explodeOffset : (i === 2 ? explodeOffset : 0));
+      lap.position.set(slotX, 0, 0);
+      modelGroup.add(lap);
+    }
+
+    // Gigabit Switch mounted on front
+    const netSw = createNetworkSwitch();
+    netSw.scale.set(0.85, 0.85, 0.85);
+    netSw.position.set(0, -2.1, 2.9 + (isExploded ? 1.2 : 0));
+    modelGroup.add(netSw);
+
+  } else if (type === 'rack') {
+    // PROTOTYPE 2: Mini Server Rack (Horizontal Stack with Fans)
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      metalness: 0.8,
+      roughness: 0.25
+    });
+
+    const acrylicMat = new THREE.MeshPhysicalMaterial({
+      color: 0x1e293b,
+      transparent: true,
+      opacity: 0.65,
+      roughness: 0.1,
+      metalness: 0.1
+    });
+
+    // 4 Corner Aluminum Extrusions
+    const legGeo = new THREE.BoxGeometry(0.3, 6.2, 0.3);
+    const legPositions = [
+      [-2.6, 0, -2.0],
+      [2.6, 0, -2.0],
+      [-2.6, 0, 2.0],
+      [2.6, 0, 2.0]
+    ];
+    legPositions.forEach(pos => {
+      const leg = new THREE.Mesh(legGeo, frameMat);
+      leg.position.set(...pos);
+      modelGroup.add(leg);
+    });
+
+    // 3 Horizontal Trays
+    const trayHeights = [-1.8, 0.0, 1.8];
+    const colors = [0x94a3b8, 0x64748b, 0x475569];
+    const thermals = [0x38bdf8, 0xfbbf24, 0xf87171];
+
+    trayHeights.forEach((y, i) => {
+      const tray = new THREE.Mesh(
+        new THREE.BoxGeometry(5.0, 0.15, 3.8),
+        acrylicMat
+      );
+      tray.position.y = y - 0.4;
+      modelGroup.add(tray);
+
+      // Laptop sitting on tray
+      const lap = createLaptopMesh(colors[i], thermals[i], 0.2);
+      const explodeY = (i - 1) * explodeOffset * 0.8;
+      lap.position.set(0, y + explodeY, 0.1);
+      modelGroup.add(lap);
+    });
+
+    // Rear 120mm Dual Fan Shroud
+    const fanShroud = new THREE.Mesh(
+      new THREE.BoxGeometry(4.8, 2.6, 0.4),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7 })
+    );
+    fanShroud.position.set(0, 0, -2.1 - (isExploded ? 1.5 : 0));
+    modelGroup.add(fanShroud);
+
+    // 2 fan circular grilles
+    [-1.2, 1.2].forEach(fx => {
+      const fanHole = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.0, 1.0, 0.42, 16),
+        new THREE.MeshBasicMaterial({ color: 0x1e293b })
+      );
+      fanHole.rotation.x = Math.PI / 2;
+      fanHole.position.set(fx, 0, -2.1 - (isExploded ? 1.5 : 0));
+      modelGroup.add(fanHole);
+    });
+
+    // Switch on top shelf
+    const netSw = createNetworkSwitch();
+    netSw.position.set(0, 2.8 + (isExploded ? 1.0 : 0), 0);
+    modelGroup.add(netSw);
+
+  } else if (type === 'wall') {
+    // PROTOTYPE 3: Wall Pegboard Cluster
+    const boardMat = new THREE.MeshStandardMaterial({
+      color: 0x1e2838,
+      metalness: 0.1,
+      roughness: 0.9
+    });
+
+    // Main Pegboard Panel
+    const board = new THREE.Mesh(
+      new THREE.BoxGeometry(8.5, 6.5, 0.2),
+      boardMat
+    );
+    board.position.set(0, 0, -0.6);
+    modelGroup.add(board);
+
+    // 3 Laptops mounted on pegboard in vertical array
+    const xOffsets = [-2.6, 0, 2.6];
+    const colors = [0x94a3b8, 0x64748b, 0x475569];
+    const thermals = [0x38bdf8, 0xfbbf24, 0xf87171];
+
+    xOffsets.forEach((x, i) => {
+      // Bracket clip
+      const bracket = new THREE.Mesh(
+        new THREE.BoxGeometry(0.3, 3.8, 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.5 })
+      );
+      bracket.position.set(x, 0.6, -0.2);
+      modelGroup.add(bracket);
+
+      const lap = createLaptopMesh(colors[i], thermals[i], 0.15);
+      lap.rotation.x = Math.PI / 2; // flat against wall
+      const zOffset = isExploded ? 1.8 : 0.3;
+      lap.position.set(x, 0.6, zOffset);
+      modelGroup.add(lap);
+    });
+
+    // Bottom cable trunking + switch
+    const trunking = new THREE.Mesh(
+      new THREE.BoxGeometry(8.0, 0.3, 0.5),
+      new THREE.MeshStandardMaterial({ color: 0x334155 })
+    );
+    trunking.position.set(0, -1.8, 0);
+    modelGroup.add(trunking);
+
+    const netSw = createNetworkSwitch();
+    netSw.position.set(0, -2.5, 0.4 + (isExploded ? 1.0 : 0));
+    modelGroup.add(netSw);
+  }
+}
+
+// --- Animation Loop ---
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Subtle ambient rotation when not dragging
+  if (!isDragging) {
+    spherical.theta += 0.0015;
+    updateCameraPos();
+  }
+
+  renderer.render(scene, camera);
+}
+
+// --- Prototype UI Switcher ---
+const protoData = {
+  toaster: {
+    badge: 'Recommended',
+    badgeClass: 'tag-easy',
+    dim: '22 × 18 × 30 cm',
+    title: 'Vertical "Toaster" Stand',
+    desc: 'Laptops stand vertically on their edges in slotted 3D-printed brackets with 2.5 cm air gaps. Lids cracked open 15° to allow natural chimney convection through keyboard deck vents.',
+    specs: [
+      { label: 'Desk Footprint', val: 'Very Small (~0.04 m²)' },
+      { label: 'Cooling Method', val: 'Natural Chimney Convection' },
+      { label: 'Build Difficulty', val: 'Easy (3D Print or Wood)' },
+      { label: 'Cable Access', val: 'Rear Channel Drop' }
+    ],
+    tipTitle: 'Why Vertical Is Best:',
+    tipDesc: 'Hot air naturally rises. Standing laptops upright keeps exhausts pointing up and prevents heat from being trapped against closed LCD screens.'
+  },
+  rack: {
+    badge: 'Datacenter Look',
+    badgeClass: 'tag-med',
+    dim: '32 × 28 × 42 cm',
+    title: 'Mini Server Cabinet Rack',
+    desc: '3-tier open frame with aluminum extrusions and acrylic trays. Includes dual 120mm USB-powered silent exhaust fans behind the chassis for high-load server cooling.',
+    specs: [
+      { label: 'Desk Footprint', val: 'Medium (~0.09 m²)' },
+      { label: 'Cooling Method', val: 'Dual 120mm Active Fans' },
+      { label: 'Build Difficulty', val: 'Moderate (Aluminum Maker Beams)' },
+      { label: 'Cable Access', val: 'Rear Side Channels' }
+    ],
+    tipTitle: 'Active Airflow Advantage:',
+    tipDesc: 'With two silent 5V USB fans running at 900 RPM, CPU temperatures drop by 12°C to 18°C, making this ideal if you run heavy Docker containers or Plex transcoding.'
+  },
+  wall: {
+    badge: 'Zero Desk Space',
+    badgeClass: 'tag-pro',
+    dim: '60 × 45 × 12 cm',
+    title: 'Wall-Mount Pegboard Cluster',
+    desc: 'Laptops mounted vertically on an IKEA Skådis or metal garage pegboard using 3D-printed brackets. Takes zero desk space and allows easy inspection of screens and status LEDs.',
+    specs: [
+      { label: 'Desk Footprint', val: 'Zero (Wall Mounted)' },
+      { label: 'Cooling Method', val: 'Open Air Ambient' },
+      { label: 'Build Difficulty', val: 'Moderate (Pegboard Mounting)' },
+      { label: 'Cable Access', val: 'Gravity-fed Bottom Trunk' }
+    ],
+    tipTitle: 'Maintenance Benefit:',
+    tipDesc: 'All laptop screens face outward. If an OS freezes or networking fails, you can see the local screen console immediately without plugging in an external monitor.'
+  }
+};
+
+function updateProtoInfo(key) {
+  const data = protoData[key];
+  document.getElementById('proto-title').textContent = data.title;
+  document.getElementById('proto-desc').textContent = data.desc;
+  document.getElementById('proto-dim').textContent = data.dim;
+
+  const badge = document.getElementById('proto-badge');
+  badge.textContent = data.badge;
+  badge.className = `tag-badge ${data.badgeClass}`;
+
+  const specList = document.getElementById('proto-specs');
+  specList.innerHTML = data.specs.map(s => `
+    <div class="spec-item">
+      <span class="spec-label">${s.label}</span>
+      <span class="spec-val">${s.val}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('proto-tip').innerHTML = `
+    <strong>${data.tipTitle}</strong>
+    ${data.tipDesc}
+  `;
+}
+
+// Button Hooks for 3D Viewport
+document.getElementById('proto-toaster').addEventListener('click', (e) => {
+  setProtoActive(e.target, 'toaster');
+});
+document.getElementById('proto-rack').addEventListener('click', (e) => {
+  setProtoActive(e.target, 'rack');
+});
+document.getElementById('proto-wall').addEventListener('click', (e) => {
+  setProtoActive(e.target, 'wall');
+});
+
+function setProtoActive(btn, key) {
+  document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentProto = key;
+  updateProtoInfo(key);
+  buildPrototype(key);
+}
+
+document.getElementById('btn-explode').addEventListener('click', (e) => {
+  isExploded = !isExploded;
+  e.currentTarget.classList.toggle('active', isExploded);
+  buildPrototype(currentProto);
+});
+
+document.getElementById('btn-thermal').addEventListener('click', (e) => {
+  isThermal = !isThermal;
+  e.currentTarget.classList.toggle('active', isThermal);
+  buildPrototype(currentProto);
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  spherical = { radius: 14, theta: Math.PI / 4, phi: Math.PI / 3 };
+  updateCameraPos();
+});
+
+// Boot calculations and 3D
+calculateCluster();
+window.addEventListener('DOMContentLoaded', initThree);
+// If already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initThree();
+}
+</script>
